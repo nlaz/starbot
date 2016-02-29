@@ -17,9 +17,10 @@ client.on :hello do
 end
 
 client.on :message do |data|
-  case data.text
-  when 'bot hi' then
-    client.message channel: data.channel, text: "Hi <@#{data.user}>!"
+  puts data
+  case data['text']
+  when /test/ then
+    client.message channel: data['channel'], text: "Hi <@#{data['user']}>!"
   end
 end
 
