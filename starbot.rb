@@ -10,7 +10,9 @@ Slack.configure do |config|
   config.token = ENV['SLACK_API_TOKEN']
 end
 
-usernames = []
+$api_path = "https://api.github.com/"
+
+$usernames = []
 usage = "Starbot - A GitHub user scoreboard for starred repos\n" \
         "Usage: \n" \
         "`@starbot help` - Displays all of the help commands that starbot knows about.\n" \
@@ -31,11 +33,44 @@ client.on :message do |data|
     command = command[client_id.length+1..-1].lstrip
 
     case command
-    when "help" then
+    when "help"
       client.message channel: data['channel'], text: "#{usage}", as_user: true
-    when "scoreboard" then
-      puts usernames
+    when "scoreboard"
+      message = ""
+      scoreboard.each_with_index do |(key, value), index|
+        message += "#{index + 1}. #{key}\t-\t#{value} stars #{emoji(index)} \n"
+      end
+      client.message channel: data['channel'], text: "#{message}", as_user: false
     end
+  end
+end
+
+def scoreboard
+  scoreboard = {}
+  $usernames.each do |username|
+    scoreboard[username] = star_count(username)
+  end
+  scoreboard.sort_by(&:last).reverse
+end
+
+def star_count(username)
+  query = $api_path + "users/#{username}/repos"
+  response = JSON.parse(HTTParty.get(query).body)
+  count = 0
+  response.each do |project|
+    count += project['stargazers_count']
+  end
+  count
+end
+
+def emoji(index)
+  case index
+  when 0
+    ":trophy:"
+  when 1
+    ":sports_medal:"
+  else
+    ""
   end
 end
 
