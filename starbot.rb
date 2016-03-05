@@ -2,6 +2,7 @@ require 'slack-ruby-client'
 require 'json'
 require 'cache'
 require 'httparty'
+require 'sqlite3'
 
 require 'dotenv'
 Dotenv.load
@@ -10,6 +11,7 @@ Slack.configure do |config|
   config.token = ENV['SLACK_API_TOKEN']
 end
 
+$db_name = "test.db"
 $api_path = "https://api.github.com/"
 
 $usernames = []
@@ -23,6 +25,7 @@ client = Slack::RealTime::Client.new
 
 client.on :hello do
   puts 'Successfully connected.'
+  init_db
 end
 
 client.on :message do |data|
@@ -41,6 +44,27 @@ client.on :message do |data|
         message += "#{index + 1}. #{key}\t-\t#{value} stars #{emoji(index)} \n"
       end
       client.message channel: data['channel'], text: "#{message}", as_user: false
+    when /^add[ ]/i
+      user = command[4..-1]
+      add_user(user)
+      client.message channel: data['channel'], text: "Added user... #{user}", as_user: false
+    end
+  end
+end
+
+# Helpers
+
+def add_user(username)
+  SQLite3::Database.new( $db_name ) do |db|
+    db.execute( "INSERT OR IGNORE INTO users (username) VALUES('#{username}')" )
+  end
+end
+
+def init_db
+  SQLite3::Database.new( $db_name ) do |db|
+    db.execute( "CREATE TABLE IF NOT EXISTS users (username VARCHAR (36) PRIMARY KEY)" )
+    db.execute( "SELECT * FROM users" ) do |user|
+      puts user
     end
   end
 end
