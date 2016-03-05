@@ -39,7 +39,8 @@ client.on :message do |data|
     when "scoreboard"
       client.message channel: data['channel'], text: "#{scoreboard_message}", as_user: false
     when /^add[ ]/i
-      add_user(command[4..-1])
+      user = command[4..-1]
+      add_user(user)
       client.message channel: data['channel'], text: "Added user... #{user}", as_user: false
       client.message channel: data['channel'], text: "#{scoreboard_message}", as_user: false
     end
@@ -73,6 +74,7 @@ def scoreboard_message
   scoreboard.each_with_index do |(key, value), index|
     message += "#{index + 1}. #{key}\t-\t#{value} stars #{emoji(index)} \n"
   end
+  message
 end
 
 def star_count(username)
@@ -90,7 +92,6 @@ def usernames
   $db.execute( "SELECT * FROM users" ) do |user|
     usernames << user[0]
   end     
-  p usernames
   usernames
 end
 
