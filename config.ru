@@ -1,1 +1,1 @@
-require_relative './starbot'
+require_relative './starbot.rb'
