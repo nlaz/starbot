@@ -14,7 +14,6 @@ end
 $db_name = "test.db"
 $api_path = "https://api.github.com/"
 
-$usernames = []
 usage = "Starbot - A GitHub user scoreboard for starred repos\n" \
         "Usage: \n" \
         "`@starbot help` - Displays all of the help commands that starbot knows about.\n" \
@@ -64,14 +63,14 @@ def init_db
   SQLite3::Database.new( $db_name ) do |db|
     db.execute( "CREATE TABLE IF NOT EXISTS users (username VARCHAR (36) PRIMARY KEY)" )
     db.execute( "SELECT * FROM users" ) do |user|
-      puts user
+      p user
     end
   end
 end
 
 def scoreboard
   scoreboard = {}
-  $usernames.each do |username|
+  usernames.each do |username|
     scoreboard[username] = star_count(username)
   end
   scoreboard.sort_by(&:last).reverse
@@ -85,6 +84,17 @@ def star_count(username)
     count += project['stargazers_count']
   end
   count
+end
+
+def usernames
+  usernames = []
+  SQLite3::Database.new( $db_name ) do |db|
+    db.execute( "SELECT * FROM users" ) do |user|
+      usernames << user[0]
+    end     
+  end
+  p usernames
+  usernames
 end
 
 def emoji(index)
