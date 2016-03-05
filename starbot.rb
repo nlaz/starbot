@@ -19,15 +19,15 @@ usage = "Starbot - A scoreboard for starred GitHub users\n" \
         "`@starbot add <username>` - Add a username to scoreboard.\n" \
         "`@starbot scoreboard` - Display all user scores.\n"
 
-$client = Slack::RealTime::Client.new
+client = Slack::RealTime::Client.new
 
-$client.on :hello do
+client.on :hello do
   puts 'Successfully connected.'
   init_db("test.db")
 end
 
-$client.on :message do |data|
-  client_id = "<@#{$client.self['id']}>"
+client.on :message do |data|
+  client_id = "<@#{client.self['id']}>"
   command = data['text']
 
   if (command[client_id] == client_id)
@@ -35,12 +35,13 @@ $client.on :message do |data|
 
     case command
     when "help"
-      send_usage_message
+      client.message channel: data['channel'], text: "#{usage}", as_user: true
     when "scoreboard"
-      send_scoreboard_message
+      client.message channel: data['channel'], text: "#{scoreboard_message}", as_user: false
     when /^add[ ]/i
       add_user(command[4..-1])
-      send_scoreboard_message
+      client.message channel: data['channel'], text: "Added user... #{user}", as_user: false
+      client.message channel: data['channel'], text: "#{scoreboard_message}", as_user: false
     end
   end
 end
@@ -49,7 +50,6 @@ end
 
 def add_user(username)
   $db.execute( "INSERT OR IGNORE INTO users (username) VALUES('#{username}')" )
-  $client.message channel: data['channel'], text: "Added user... #{user}", as_user: false
 end
 
 def init_db(db_name)
@@ -68,16 +68,11 @@ def scoreboard
   scoreboard.sort_by(&:last).reverse
 end
 
-def send_scoreboard_message
+def scoreboard_message
   message = ""
   scoreboard.each_with_index do |(key, value), index|
     message += "#{index + 1}. #{key}\t-\t#{value} stars #{emoji(index)} \n"
   end
-  $client.message channel: data['channel'], text: "#{message}", as_user: false
-end
-
-def send_usage_message
-  $client.message channel: data['channel'], text: "#{usage}", as_user: true
 end
 
 def star_count(username)
@@ -110,4 +105,4 @@ def emoji(index)
   end
 end
 
-$client.start!
+client.start!
