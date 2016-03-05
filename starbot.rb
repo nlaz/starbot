@@ -11,10 +11,9 @@ Slack.configure do |config|
   config.token = ENV['SLACK_API_TOKEN']
 end
 
-$db_name = "test.db"
 $api_path = "https://api.github.com/"
 
-usage = "Starbot - A GitHub user scoreboard for starred repos\n" \
+usage = "Starbot - A scoreboard for starred GitHub users\n" \
         "Usage: \n" \
         "`@starbot help` - Displays all of the help commands that starbot knows about.\n" \
         "`@starbot add <username>` - Add a username to scoreboard.\n" \
@@ -24,7 +23,7 @@ client = Slack::RealTime::Client.new
 
 client.on :hello do
   puts 'Successfully connected.'
-  init_db
+  init_db("test.db")
 end
 
 client.on :message do |data|
@@ -36,17 +35,12 @@ client.on :message do |data|
 
     case command
     when "help"
-      client.message channel: data['channel'], text: "#{usage}", as_user: true
+      send_usage_message
     when "scoreboard"
-      message = ""
-      scoreboard.each_with_index do |(key, value), index|
-        message += "#{index + 1}. #{key}\t-\t#{value} stars #{emoji(index)} \n"
-      end
-      client.message channel: data['channel'], text: "#{message}", as_user: false
+      send_scoreboard_message
     when /^add[ ]/i
-      user = command[4..-1]
-      add_user(user)
-      client.message channel: data['channel'], text: "Added user... #{user}", as_user: false
+      add_user(command[4..-1])
+      send_scoreboard_message
     end
   end
 end
@@ -54,17 +48,15 @@ end
 # Helpers
 
 def add_user(username)
-  SQLite3::Database.new( $db_name ) do |db|
-    db.execute( "INSERT OR IGNORE INTO users (username) VALUES('#{username}')" )
-  end
+  $db.execute( "INSERT OR IGNORE INTO users (username) VALUES('#{username}')" )
+  client.message channel: data['channel'], text: "Added user... #{user}", as_user: false
 end
 
-def init_db
-  SQLite3::Database.new( $db_name ) do |db|
-    db.execute( "CREATE TABLE IF NOT EXISTS users (username VARCHAR (36) PRIMARY KEY)" )
-    db.execute( "SELECT * FROM users" ) do |user|
-      p user
-    end
+def init_db(db_name)
+  $db = SQLite3::Database.new( db_name )
+  $db.execute( "CREATE TABLE IF NOT EXISTS users (username VARCHAR (36) PRIMARY KEY)" )
+  $db.execute( "SELECT * FROM users" ) do |user|
+    p user
   end
 end
 
@@ -74,6 +66,18 @@ def scoreboard
     scoreboard[username] = star_count(username)
   end
   scoreboard.sort_by(&:last).reverse
+end
+
+def send_scoreboard_message
+  message = ""
+  scoreboard.each_with_index do |(key, value), index|
+    message += "#{index + 1}. #{key}\t-\t#{value} stars #{emoji(index)} \n"
+  end
+  client.message channel: data['channel'], text: "#{message}", as_user: false
+end
+
+def send_usage_message
+  client.message channel: data['channel'], text: "#{usage}", as_user: true
 end
 
 def star_count(username)
@@ -88,11 +92,9 @@ end
 
 def usernames
   usernames = []
-  SQLite3::Database.new( $db_name ) do |db|
-    db.execute( "SELECT * FROM users" ) do |user|
-      usernames << user[0]
-    end     
-  end
+  $db.execute( "SELECT * FROM users" ) do |user|
+    usernames << user[0]
+  end     
   p usernames
   usernames
 end
