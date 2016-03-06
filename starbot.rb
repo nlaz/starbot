@@ -17,6 +17,7 @@ usage = "Starbot - A scoreboard for starred GitHub users\n" \
         "Usage: \n" \
         "`@starbot help` - Displays all of the help commands that starbot knows about.\n" \
         "`@starbot add <username>` - Add a username to scoreboard.\n" \
+        "`@starbot remove <username>` - Remove a username from the scoreboard.\n" \
         "`@starbot scoreboard` - Display all user scores.\n"
 
 client = Slack::RealTime::Client.new
@@ -40,8 +41,13 @@ client.on :message do |data|
       client.message channel: data['channel'], text: "#{scoreboard_message}", as_user: false
     when /^add[ ]/i
       user = command[4..-1]
+      client.message channel: data['channel'], text: "Adding user... #{user}", as_user: false
       add_user(user)
-      client.message channel: data['channel'], text: "Added user... #{user}", as_user: false
+      client.message channel: data['channel'], text: "#{scoreboard_message}", as_user: false
+    when /^remove[ ]/i
+      user = command[7..-1]
+      client.message channel: data['channel'], text: "Removing user... #{user}", as_user: false
+      remove_user(user)
       client.message channel: data['channel'], text: "#{scoreboard_message}", as_user: false
     end
   end
@@ -51,6 +57,10 @@ end
 
 def add_user(username)
   $db.execute( "INSERT OR IGNORE INTO users (username) VALUES('#{username}')" )
+end
+
+def remove_user(username)
+  $db.execute( "DELETE FROM users WHERE username='#{username}'" )
 end
 
 def init_db(db_name)
