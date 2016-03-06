@@ -36,19 +36,19 @@ client.on :message do |data|
 
     case command
     when "help"
-      client.message channel: data['channel'], text: "#{usage}", as_user: true
+      client.message channel: data['channel'], text: "#{usage}"
     when "scoreboard"
-      client.message channel: data['channel'], text: "#{scoreboard_message}", as_user: false
+      client.message channel: data['channel'], text: "#{scoreboard_message}"
     when /^add[ ]/i
       user = command[4..-1]
-      client.message channel: data['channel'], text: "Adding user... #{user}", as_user: false
+      client.message channel: data['channel'], text: "Adding user... #{user}"
       add_user(user)
-      client.message channel: data['channel'], text: "#{scoreboard_message}", as_user: false
+      client.message channel: data['channel'], text: "#{scoreboard_message}"
     when /^remove[ ]/i
       user = command[7..-1]
-      client.message channel: data['channel'], text: "Removing user... #{user}", as_user: false
+      client.message channel: data['channel'], text: "Removing user... #{user}"
       remove_user(user)
-      client.message channel: data['channel'], text: "#{scoreboard_message}", as_user: false
+      client.message channel: data['channel'], text: "#{scoreboard_message}"
     end
   end
 end
