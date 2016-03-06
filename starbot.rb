@@ -41,14 +41,26 @@ client.on :message do |data|
       client.message channel: data['channel'], text: "#{scoreboard_message}"
     when /^add[ ]/i
       user = command[4..-1]
-      client.message channel: data['channel'], text: "Adding user... #{user}"
-      client.message channel: data['channel'], text: "#{add_user user}"
-      client.message channel: data['channel'], text: "#{scoreboard_message}"
+      if usernames.include? user
+        client.message channel: data['channel'], text: "Oops! #{user} is already on our list."
+      else
+        client.message channel: data['channel'], text: "Adding user... #{user}"
+        if add_user(user)
+          client.message channel: data['channel'], text: "Success! Added #{user} :tada:"
+          client.message channel: data['channel'], text: "#{scoreboard_message}"
+        else
+          client.message channel: data['channel'], text: "Error! Invalid user: #{user}..."
+        end
+      end
     when /^remove[ ]/i
       user = command[7..-1]
       client.message channel: data['channel'], text: "Removing user... #{user}"
-      remove_user(user)
-      client.message channel: data['channel'], text: "#{scoreboard_message}"
+      if remove_user(user)
+        client.message channel: data['channel'], text: "Success! Removed #{user} from the scoreboard."
+        client.message channel: data['channel'], text: "#{scoreboard_message}"
+      else
+        client.message channel: data['channel'], text: "Error! User #{user} not found."
+      end
     end
   end
 end
@@ -59,15 +71,19 @@ def add_user(username)
   response = HTTParty.get($api_path + "users/#{username}")
   if response.code == 200
     $db.execute( "INSERT OR IGNORE INTO users (username) VALUES('#{username}')" )
-    message = "Success! Added #{username} :tada:"
+    true
   elsif response.code == 404
-    message = "Error! Invalid user: #{username}..."
+    false
   end
-  message
 end
 
 def remove_user(username)
-  $db.execute( "DELETE FROM users WHERE username='#{username}'" )
+  if usernames.include? username
+    $db.execute( "DELETE FROM users WHERE username='#{username}'" )
+    true
+  else
+    false
+  end
 end
 
 def init_db(db_name)
