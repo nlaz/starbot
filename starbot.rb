@@ -42,7 +42,7 @@ client.on :message do |data|
     when /^add[ ]/i
       user = command[4..-1]
       client.message channel: data['channel'], text: "Adding user... #{user}"
-      add_user(user)
+      client.message channel: data['channel'], text: "#{add_user user}"
       client.message channel: data['channel'], text: "#{scoreboard_message}"
     when /^remove[ ]/i
       user = command[7..-1]
@@ -56,7 +56,14 @@ end
 # Helpers
 
 def add_user(username)
-  $db.execute( "INSERT OR IGNORE INTO users (username) VALUES('#{username}')" )
+  response = HTTParty.get($api_path + "users/#{username}")
+  if response.code == 200
+    $db.execute( "INSERT OR IGNORE INTO users (username) VALUES('#{username}')" )
+    message = "Success! Added #{username} :tada:"
+  elsif response.code == 404
+    message = "Error! Invalid user: #{username}..."
+  end
+  message
 end
 
 def remove_user(username)
