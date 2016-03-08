@@ -13,8 +13,7 @@ end
 
 $api_path = "https://api.github.com/"
 
-usage = "Starbot - A scoreboard for starred GitHub users\n" \
-        "Usage: \n" \
+usage = "*Starbot* - A scoreboard for starred GitHub users\n" \
         "`@starbot help` - Displays all of the help commands that starbot knows about.\n" \
         "`@starbot add <username>` - Add a username to scoreboard.\n" \
         "`@starbot remove <username>` - Remove a username from the scoreboard.\n" \
@@ -61,6 +60,9 @@ client.on :message do |data|
       else
         client.message channel: data['channel'], text: "Error! User #{user} not found."
       end
+    else
+      client.message channel: data['channel'], text: "Oops! Unable to recognize command. Please try again."
+      client.message channel: data['channel'], text: "#{usage}"
     end
   end
 end
