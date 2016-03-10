@@ -15,6 +15,7 @@ $api_path = "https://api.github.com/"
 
 usage = "*Starbot* - A scoreboard for starred GitHub users\n" \
         "`@starbot help` - Displays all of the help commands that starbot knows about.\n" \
+        "`@starbot users` - Displays a list of all current users tracked by starbot\n" \
         "`@starbot add <username>` - Add a username to scoreboard.\n" \
         "`@starbot remove <username>` - Remove a username from the scoreboard.\n" \
         "`@starbot scoreboard` - Display all user scores.\n"
@@ -38,6 +39,9 @@ client.on :message do |data|
       client.message channel: data['channel'], text: "#{usage}"
     when "scoreboard"
       client.message channel: data['channel'], text: "#{scoreboard_message}"
+    when "users"
+      client.message channel: data['channel'], text: "*Here's the list of current users...*"
+      client.message channel: data['channel'], text: "#{usernames.join(', ')}"
     when /^add[ ]/i
       user = command[4..-1]
       if usernames.include? user
