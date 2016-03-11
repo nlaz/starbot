@@ -28,3 +28,6 @@ You should now be able to run your bot locally and test it.
 ```
 $ ruby starbot.rb
 ```
+
+### Contributing
+Suggestions and pull requests are welcome! Any questions or suggestions can be sent to [@nikolazaris](https://twitter.com/nikolazaris). Cheers!
