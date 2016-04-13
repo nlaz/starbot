@@ -21,7 +21,7 @@ usage = "*Starbot* - A scoreboard for starred GitHub users\n" \
         "`@starbot add <username>` - Add a username to scoreboard.\n" \
         "`@starbot remove <username>` - Remove a username from the scoreboard.\n" \
         "`@starbot scoreboard` - Display all user scores.\n" \
-        "`@starbot streak` - Display latest streak for all users.\n"
+        "`@starbot streaks` - Display latest streak for all users.\n"
 
 client = Slack::RealTime::Client.new
 
@@ -42,8 +42,8 @@ client.on :message do |data|
       client.message channel: data['channel'], text: "#{usage}"
     when "scoreboard"
       client.message channel: data['channel'], text: "#{scoreboard_message}"
-    when "streak"
-      streak
+    when "streaks"
+      client.message channel: data['channel'], text: "#{current_streak_message}"
     when "users"
       client.message channel: data['channel'], text: "*Here's the list of current users...*"
       client.message channel: data['channel'], text: "#{usernames.join(', ')}"
@@ -113,15 +113,21 @@ def scoreboard
   scoreboard.sort_by(&:last).reverse
 end
 
-def streak
-  streaks = {}
+def current_streak
+  current_streaks = {}
   usernames.each do |username|
     doc = Nokogiri::HTML(open("https://github.com/#{username}"))
-    doc.css('.contrib-column').each do |link|
-      puts link.content
-    end
+    current_streaks[username] = doc.css('.contrib-number').last.content
   end
+  current_streaks
+end
 
+def current_streak_message
+  message = ""
+  current_streak.each do |(key, value)|
+    message += "#{key}\t-\t#{value} \n"
+  end
+  message
 end
 
 def scoreboard_message
