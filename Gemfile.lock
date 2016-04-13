@@ -15,8 +15,11 @@ GEM
       json (~> 1.8)
       multi_xml (>= 0.5.2)
     json (1.8.3)
+    mini_portile2 (2.0.0)
     multi_xml (0.5.5)
     multipart-post (2.0.0)
+    nokogiri (1.6.7.2)
+      mini_portile2 (~> 2.0.0.rc2)
     ruby-cache (0.3.0)
     slack-ruby-client (0.5.4)
       faraday
@@ -37,6 +40,7 @@ DEPENDENCIES
   eventmachine
   faye-websocket
   httparty
+  nokogiri
   ruby-cache
   slack-ruby-client
   sqlite3

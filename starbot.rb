@@ -3,6 +3,8 @@ require 'json'
 require 'cache'
 require 'httparty'
 require 'sqlite3'
+require 'nokogiri'
+require 'open-uri'
 
 require 'dotenv'
 Dotenv.load
@@ -40,6 +42,8 @@ client.on :message do |data|
       client.message channel: data['channel'], text: "#{usage}"
     when "scoreboard"
       client.message channel: data['channel'], text: "#{scoreboard_message}"
+    when "streak"
+      streak
     when "users"
       client.message channel: data['channel'], text: "*Here's the list of current users...*"
       client.message channel: data['channel'], text: "#{usernames.join(', ')}"
@@ -107,6 +111,17 @@ def scoreboard
     scoreboard[username] = star_count(username)
   end
   scoreboard.sort_by(&:last).reverse
+end
+
+def streak
+  streaks = {}
+  usernames.each do |username|
+    doc = Nokogiri::HTML(open("https://github.com/#{username}"))
+    doc.css('.contrib-column').each do |link|
+      puts link.content
+    end
+  end
+
 end
 
 def scoreboard_message
