@@ -18,7 +18,8 @@ usage = "*Starbot* - A scoreboard for starred GitHub users\n" \
         "`@starbot users` - Displays a list of all current users tracked by starbot\n" \
         "`@starbot add <username>` - Add a username to scoreboard.\n" \
         "`@starbot remove <username>` - Remove a username from the scoreboard.\n" \
-        "`@starbot scoreboard` - Display all user scores.\n"
+        "`@starbot scoreboard` - Display all user scores.\n" \
+        "`@starbot streak` - Display latest streak for all users.\n"
 
 client = Slack::RealTime::Client.new
 
