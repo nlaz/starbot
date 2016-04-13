@@ -44,6 +44,8 @@ client.on :message do |data|
       client.message channel: data['channel'], text: "#{scoreboard_message}"
     when "streaks"
       client.message channel: data['channel'], text: "#{current_streak_message}"
+    when "highfive!"
+      client.message channel: data['channel'], text: "Woot! Highfive! :hand:"
     when "users"
       client.message channel: data['channel'], text: "*Here's the list of current users...*"
       client.message channel: data['channel'], text: "#{usernames.join(', ')}"
