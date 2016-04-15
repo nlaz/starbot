@@ -22,6 +22,7 @@ usage = "*Starbot* - A scoreboard for starred GitHub users\n" \
         "`@starbot remove <username>` - Remove a username from the scoreboard.\n" \
         "`@starbot scoreboard` - Display all user scores.\n" \
         "`@starbot streaks` - Display latest streak for all users.\n"
+        "`@starbot contribs` - Display number of contributions for all users.\n"
 
 client = Slack::RealTime::Client.new
 
@@ -44,6 +45,8 @@ client.on :message do |data|
       client.message channel: data['channel'], text: "#{scoreboard_message}"
     when "streaks"
       client.message channel: data['channel'], text: "#{current_streak_message}"
+    when "contribs"
+      client.message channel: data['channel'], text: "#{contribution_message}"
     when "highfive!"
       client.message channel: data['channel'], text: "Woot! Highfive! :hand:"
     when "who are you?"
@@ -117,6 +120,22 @@ def scoreboard
     scoreboard[username] = star_count(username)
   end
   scoreboard.sort_by(&:last).reverse
+end
+
+def contributions
+  contributions = {}
+  usernames.each do |username|
+    doc = Nokogiri::HTML(open("https://github.com/#{username}"))
+    current_streaks[username] = doc.css('.contrib-number').first.content
+  end
+end
+
+def contribution_message
+  message = ""
+  contributions.each do |(key, value)|
+    message += "#{key}\t-\t#{value} \n"
+  end
+  message
 end
 
 def current_streak
