@@ -126,7 +126,7 @@ def contributions
   contributions = {}
   usernames.each do |username|
     doc = Nokogiri::HTML(open("https://github.com/#{username}"))
-    current_streaks[username] = doc.css('.contrib-number').first.content
+    contributions[username] = doc.css('.contrib-number').first.content
   end
 end
 
