@@ -40,45 +40,42 @@ client.on :message do |data|
 
     case command
     when "help"
-      client.message channel: data['channel'], text: "#{usage}"
+      speak(client, data, "#{usage}")
     when "scoreboard"
-      client.message channel: data['channel'], text: "#{scoreboard_message}"
+      speak(client, data, "#{scoreboard_message}")
     when "streaks"
-      client.message channel: data['channel'], text: "#{current_streak_message}"
+      speak(client, data, "#{current_streak_message}")
     when "contribs"
-      client.message channel: data['channel'], text: "#{contribution_message}"
+      speak(client, data, "#{contribution_message}")
     when "highfive!"
-      client.message channel: data['channel'], text: "Woot! Highfive! :hand:"
+      speak(client, data, "Woot! Highfive! :hand:")
     when "night night"
+      speak(client, data, "Woot! Highfive! :hand:")
       client.message channel: data['channel'], text: "Goodnight! :zzz:"
     when "users"
-      client.message channel: data['channel'], text: "*Here's the list of current users...*"
-      client.message channel: data['channel'], text: "#{usernames.join(', ')}"
+      speak(client, data, "*Here's the list of current users...*\n#{usernames.join(', ')}")
     when /^add[ ]/i
       user = command[4..-1]
       if usernames.include? user
-        client.message channel: data['channel'], text: "Oops! #{user} is already on our list."
+        speak(client, data, "Oops! #{user} is already on our list.")
       else
-        client.message channel: data['channel'], text: "Adding user... #{user}"
+        speak(client, data, "Adding user... #{user}")
         if add_user(user)
-          client.message channel: data['channel'], text: "Success! Added #{user} :tada:"
-          client.message channel: data['channel'], text: "#{scoreboard_message}"
+          speak(client, data, "Success! Added #{user} :tada:\n#{scoreboard_message}")
         else
-          client.message channel: data['channel'], text: "Error! Invalid user: #{user}..."
+          speak(client, data, "Error! Invalid user: #{user}...")
         end
       end
     when /^remove[ ]/i
       user = command[7..-1]
-      client.message channel: data['channel'], text: "Removing user... #{user}"
+      speak(client, data, "Removing user... #{user}")
       if remove_user(user)
-        client.message channel: data['channel'], text: "Success! Removed #{user} from the scoreboard."
-        client.message channel: data['channel'], text: "#{scoreboard_message}"
+        speak(client, data, "Success! Removed #{user} from the scoreboard.\n#{scoreboard_message}")
       else
-        client.message channel: data['channel'], text: "Error! User #{user} not found."
+        speak(client, data, "Error! User #{user} not found.")
       end
     else
-      client.message channel: data['channel'], text: "Oops! Unable to recognize command. Please try again."
-      client.message channel: data['channel'], text: "#{usage}"
+      speak(client, data, "Oops! Unable to recognize command. Please try again.\n#{usage}")
     end
   end
 end
@@ -110,6 +107,10 @@ def init_db(db_name)
   $db.execute( "SELECT * FROM users" ) do |user|
     p user
   end
+end
+
+def speak(client, data, text)
+  client.message channel: data['channel'], text: text
 end
 
 def scoreboard
