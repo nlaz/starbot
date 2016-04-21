@@ -116,14 +116,6 @@ def init_db(db_name)
   end
 end
 
-def scoreboard
-  scoreboard = {}
-  usernames.each do |username|
-    scoreboard[username] = star_count(username)
-  end
-  scoreboard.sort_by(&:last).reverse
-end
-
 def contributions
   contributions = {}
   usernames.each do |username|
@@ -158,12 +150,19 @@ def current_streak_message
   message
 end
 
-def scoreboard_message
-  message = ""
-  scoreboard.each_with_index do |(key, value), index|
-    message += "#{index + 1}. #{key}\t-\t#{value} stars #{emoji(index)} \n"
+def scoreboard
+  scoreboard = {}
+  usernames.each do |username|
+    scoreboard[username] = star_count(username)
   end
-  message
+  scoreboard.sort_by(&:last).reverse
+end
+
+def scoreboard_message
+  messages = scoreboard.map.with_index do |(key, value), index| 
+    "#{index + 1}. #{key}\t-\t#{value} stars #{emoji(index)} \n"
+  end
+  messages.join
 end
 
 def star_count(username)
