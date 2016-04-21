@@ -24,7 +24,15 @@ usage = "*Starbot* - A scoreboard for starred GitHub users\n" \
         "`@starbot streaks` - Display latest streak for all users.\n"
         "`@starbot contribs` - Display number of contributions for all users.\n"
 
-client = Slack::RealTime::Client.new
+# Class Helpers
+
+class Starbot < Slack::RealTime::Client
+  def speak(text, data)
+    self.message channel: data['channel'], text: text
+  end
+end
+
+client = Starbot.new
 
 client.on :hello do
   puts 'Successfully connected.'
@@ -40,42 +48,41 @@ client.on :message do |data|
 
     case command
     when "help"
-      speak(client, data, "#{usage}")
+      client.speak("#{usage}", data)
     when "scoreboard"
-      speak(client, data, "#{scoreboard_message}")
+      client.speak("#{scoreboard_message}", data)
     when "streaks"
-      speak(client, data, "#{current_streak_message}")
+      client.speak("#{current_streak_message}", data)
     when "contribs"
-      speak(client, data, "#{contribution_message}")
+      client.speak("#{contribution_message}", data)
     when "highfive!"
-      speak(client, data, "Woot! Highfive! :hand:")
+      client.speak("Woot! Highfive! :hand:", data)
     when "night night"
-      speak(client, data, "Woot! Highfive! :hand:")
-      client.message channel: data['channel'], text: "Goodnight! :zzz:"
+      client.speak("Goodnight! :zzz:", data)
     when "users"
-      speak(client, data, "*Here's the list of current users...*\n#{usernames.join(', ')}")
+      client.speak("*Here's the list of current users...*\n#{usernames.join(', ')}", data)
     when /^add[ ]/i
       user = command[4..-1]
       if usernames.include? user
-        speak(client, data, "Oops! #{user} is already on our list.")
+        client.speak("Oops! #{user} is already on our list.", data)
       else
-        speak(client, data, "Adding user... #{user}")
+        client.client.speak("Adding user... #{user}", data)
         if add_user(user)
-          speak(client, data, "Success! Added #{user} :tada:\n#{scoreboard_message}")
+          client.speak("Success! Added #{user} :tada:\n#{scoreboard_message}", data)
         else
-          speak(client, data, "Error! Invalid user: #{user}...")
+          client.speak("Error! Invalid user: #{user}...", data)
         end
       end
     when /^remove[ ]/i
       user = command[7..-1]
-      speak(client, data, "Removing user... #{user}")
+      client.speak("Removing user... #{user}",data)
       if remove_user(user)
-        speak(client, data, "Success! Removed #{user} from the scoreboard.\n#{scoreboard_message}")
+        client.speak("Success! Removed #{user} from the scoreboard.\n#{scoreboard_message}", data)
       else
-        speak(client, data, "Error! User #{user} not found.")
+        client.speak("Error! User #{user} not found.", data)
       end
     else
-      speak(client, data, "Oops! Unable to recognize command. Please try again.\n#{usage}")
+      client.speak("Oops! Unable to recognize command. Please try again.\n#{usage}", data)
     end
   end
 end
@@ -107,10 +114,6 @@ def init_db(db_name)
   $db.execute( "SELECT * FROM users" ) do |user|
     p user
   end
-end
-
-def speak(client, data, text)
-  client.message channel: data['channel'], text: text
 end
 
 def scoreboard
