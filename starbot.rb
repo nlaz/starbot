@@ -151,10 +151,8 @@ def current_streak_message
 end
 
 def scoreboard
-  scoreboard = {}
-  usernames.each do |username|
-    scoreboard[username] = star_count(username)
-  end
+  scoreboard = Hash.new { |hash, key| hash[key] = star_count(key) }
+  usernames.each { |username| scoreboard[username] }
   scoreboard.sort_by(&:last).reverse
 end
 
