@@ -116,38 +116,26 @@ def init_db(db_name)
   end
 end
 
-def contributions
-  contributions = {}
-  usernames.each do |username|
-    doc = Nokogiri::HTML(open("https://github.com/#{username}"))
-    contributions[username] = doc.css('.contrib-number').first.content
-  end
-  contributions
-end
-
+# TODO combine contributions and streaks
+# TODO add longest streak
 def contribution_message
-  message = ""
-  contributions.each do |(key, value)|
-    message += "#{key}\t-\t#{value} \n"
+  contributions = Hash.new do |hash, key|
+    doc = Nokogiri::HTML(open("https://github.com/#{key}"))
+    hash[key] = doc.css('.contrib-number').first.content
   end
-  message
-end
-
-def current_streak
-  current_streaks = {}
-  usernames.each do |username|
-    doc = Nokogiri::HTML(open("https://github.com/#{username}"))
-    current_streaks[username] = doc.css('.contrib-number').last.content
-  end
-  current_streaks
+  usernames.each { |username| contributions[username] }
+  # TODO Sort contributions
+  contributions.map { |(key, value)| "#{key}\t-\t#{value} \n" }.join
 end
 
 def current_streak_message
-  message = ""
-  current_streak.each do |(key, value)|
-    message += "#{key}\t-\t#{value} \n"
+  current_streaks = Hash.new do |hash, key|
+    doc = Nokogiri::HTML(open("https://github.com/#{key}"))
+    hash[key] = doc.css('.contrib-number').last.content
   end
-  message
+  usernames.each { |username| current_streaks[username] }
+  # TODO Sort streaks
+  current_streaks.map { |(key, value)| "#{key}\t-\t#{value} \n" }.join
 end
 
 def scoreboard
