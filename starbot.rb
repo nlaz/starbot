@@ -49,8 +49,6 @@ client.on :message do |data|
       client.message channel: data['channel'], text: "#{contribution_message}"
     when "highfive!"
       client.message channel: data['channel'], text: "Woot! Highfive! :hand:"
-    when "who are you?"
-      client.message channel: data['channel'], text: "The ruler of Shittybots! :crown:"
     when "night night"
       client.message channel: data['channel'], text: "Goodnight! :zzz:"
     when "users"
@@ -128,6 +126,7 @@ def contributions
     doc = Nokogiri::HTML(open("https://github.com/#{username}"))
     contributions[username] = doc.css('.contrib-number').first.content
   end
+  contributions
 end
 
 def contribution_message
