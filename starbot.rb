@@ -21,8 +21,9 @@ usage = "*Starbot* - A scoreboard for starred GitHub users\n" \
         "`@starbot add <username>` - Add a username to scoreboard.\n" \
         "`@starbot remove <username>` - Remove a username from the scoreboard.\n" \
         "`@starbot scoreboard` - Display all user scores.\n" \
-        "`@starbot streaks` - Display latest streak for all users.\n"
-        "`@starbot contribs` - Display number of contributions for all users.\n"
+        "`@starbot streaks` - Display latest streak for all users.\n" \
+        "`@starbot contribs` - Display number of contributions for all users.\n" \
+        "`@starbot longest streaks` - Display longest contribution streaks for all users.\n"
 
 # Class Helpers
 
@@ -55,6 +56,8 @@ client.on :message do |data|
       client.speak("#{current_streak_message}", data)
     when "contribs"
       client.speak("#{contribution_message}", data)
+    when "longest streak"
+      client.speak("#{longest_streak_message}", data)
     when "highfive!"
       client.speak("Woot! Highfive! :hand:", data)
     when "night night"
@@ -114,6 +117,16 @@ def init_db(db_name)
   $db.execute( "SELECT * FROM users" ) do |user|
     p user
   end
+end
+
+def longest_streak_message
+  contributions = Hash.new do |hash, key|
+    doc = Nokogiri::HTML(open("https://github.com/#{key}"))
+    hash[key] = doc.css('.contrib-number')[1].content
+  end
+  usernames.each { |username| contributions[username] }
+  # TODO Sort contributions
+  contributions.map { |(key, value)| "#{key}\t-\t#{value} \n" }.join
 end
 
 # TODO combine contributions and streaks
