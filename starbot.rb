@@ -21,6 +21,7 @@ usage = "*Starbot* - A scoreboard for starred GitHub users\n" \
         "`@starbot add <username>` - Add a username to scoreboard.\n" \
         "`@starbot remove <username>` - Remove a username from the scoreboard.\n" \
         "`@starbot scoreboard` - Display all user scores.\n" \
+        "`@starbot today` - Display who has committed today.\n" \
         "`@starbot streaks` - Display latest streak for all users.\n" \
         "`@starbot contribs` - Display number of contributions for all users.\n" \
         "`@starbot longest streak` - Display longest contribution streaks for all users.\n"
@@ -58,6 +59,8 @@ client.on :message do |data|
       client.speak("#{total_contributions_message}", data)
     when "longest streak"
       client.speak("#{longest_streak_message}", data)
+    when "today"
+      client.speak("#{daily_commit_message}", data)
     when "highfive!"
       client.speak("Woot! Highfive! :hand:", data)
     when "night night"
@@ -141,6 +144,17 @@ def contribution_message(number)
   usernames.each { |username| dictionary[username] }
   # TODO Sort streaks
   dictionary.map { |(key, value)| "#{key}\t-\t#{value} \n" }.join
+end
+
+def daily_commit_message
+  dictionary = {}
+  usernames.each do |username|
+    doc = Nokogiri::HTML(open("https://github.com/#{username}"))
+    date = Date.today.strftime('%F')
+    rect = doc.css("rect[data-date='#{date}']")
+    dictionary[username] = rect.first.attributes['data-count'].value
+  end
+  dictionary.map { |(key, value)| "#{key}\t-\t#{value} commits today! \n" }.join
 end
 
 def scoreboard
